@@ -1,14 +1,6 @@
 name: Stable Build
 
 on:
-  push:
-    tags:
-      - v*
-    paths-ignore:
-      - 'README.md'
-      - '.github/docs/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/pull_request_template.md'
   workflow_dispatch:
     inputs:
       version:
