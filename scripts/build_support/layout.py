@@ -108,17 +108,17 @@ def move_dependency_files(output_dir: Path, deps_dir: Path, root_file_names: set
 
 
 def should_move_dependency_file(path: Path, configuration: str) -> bool:
-    if path.suffix.lower() in DEPENDENCY_SUFFIXES:
-        return True
-
-    if is_versioned_shared_object(path):
-        return True
-
     if path.name in HUB_LIBRARY_NAMES:
         return False
 
     if configuration != "release" and path.name in HUB_SYMBOL_NAMES:
         return False
+    
+    if path.suffix.lower() in DEPENDENCY_SUFFIXES:
+        return True
+
+    if is_versioned_shared_object(path):
+        return True    
 
     return False
 
