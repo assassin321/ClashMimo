@@ -1,6 +1,14 @@
 name: Stable Build
 
 on:
+  push:
+    tags:
+      - v*
+    paths-ignore:
+      - 'README.md'
+      - '.github/docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
   workflow_dispatch:
     inputs:
       version:
@@ -352,7 +360,7 @@ jobs:
           printf '%s' '${{ needs.prepare.outputs.release_notes }}' | base64 --decode > release_notes.md
           cat release_notes.md
 
-      - name: Publish to clashmimo
+      - name: Publish to ClashMimo
         uses: softprops/action-gh-release@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
