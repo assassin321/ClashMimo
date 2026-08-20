@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ClashMimo.Desktop.Controls"
+             xmlns:loc="using:ClashMimo.Desktop.Localization"
+             xmlns:vm="using:ClashMimo.Presentation.ViewModels"
+             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+             x:Class="ClashMimo.Desktop.Views.SettingsView"
+             x:CompileBindings="True"
+             x:DataType="vm:MainWindowViewModel"
+             controls:InputDefocusBehavior.IsEnabled="True"
+             AutomationProperties.AutomationId="Settings.Root"
+             Background="Transparent">
+  <Border AutomationProperties.AutomationId="Settings.Page" Background="Transparent">
+    <!-- 页头固定，下方内容区滚动 -->
+    <Grid RowDefinitions="Auto,*" RowSpacing="22">
+
+      <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+        <Button Classes="settings-back"
+                AutomationProperties.AutomationId="Settings.BackButton"
+                IsVisible="{Binding Settings.IsBackVisible}"
+                Command="{Binding Settings.BackCommand}">
+          <iconPacks:PackIconMingCuteIcons Classes="settings-back-icon"
+                                            Kind="ArrowLeftLine" />
+        </Button>
+        <TextBlock x:Name="SettingsHeaderText"
+                   Text="{Binding Settings.HeaderText}"
+                   FontSize="26"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center"
+                   RenderTransformOrigin="50%,50%"
+                   Foreground="{DynamicResource AppTextPrimaryBrush}" />
+      </StackPanel>
+
+      <!-- 承载全部设置子页面板 -->
+      <ScrollViewer x:Name="SettingsScroll"
+                    Grid.Row="1"
+                    AutomationProperties.AutomationId="Settings.ScrollViewer"
+                    HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid HorizontalAlignment="Stretch" Margin="8,0,25,12">
+          <!-- 设置子页按当前路由创建，避免隐藏面板常驻视觉树。 -->
+          <ContentControl x:Name="SettingsContentPanel"
+                          HorizontalAlignment="Stretch"
+                          RenderTransformOrigin="50%,50%" />
+        </Grid>
+      </ScrollViewer>
+    </Grid>
+  </Border>
+</UserControl>

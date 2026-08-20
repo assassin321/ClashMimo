@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>$(AppName)</AssemblyName>
+    <Version>$(AppVersion)</Version>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <HotAvaloniaAutoEnable>false</HotAvaloniaAutoEnable>
+    <ApplicationIcon>Assets\win\app_icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputType>Exe</OutputType>
+    <HotAvaloniaMode>Aggressive</HotAvaloniaMode>
+  </PropertyGroup>
+  
+  <!-- Win10 免装运行时 -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' Or '$(RuntimeIdentifier)' == 'win-arm64'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ClashMimo.Shell.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="12.1.1" PrivateAssets="All" Publish="True" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
+    <PackageReference Include="HotAvalonia" Version="3.1.4" PrivateAssets="All" Publish="True" Condition="'$(Configuration)' == 'Debug'" />
+    <PackageReference Include="IconPacks.Avalonia.MingCuteIcons" Version="2.0.0-clashmimo.1" />
+    <PackageReference Include="Semi.Avalonia" Version="12.1.0" />
+    <PackageReference Include="Semi.Avalonia.AvaloniaEdit" Version="12.0.0" />
+    <PackageReference Include="Semi.Avalonia.DataGrid" Version="12.1.0" />
+    <PackageReference Include="Semi.Avalonia.ColorPicker" Version="12.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ClashMimo.Infrastructure\ClashMimo.Infrastructure.csproj" />
+    <ProjectReference Include="..\ClashMimo.Native\ClashMimo.Native.csproj" />
+    <ProjectReference Include="..\ClashMimo.Presentation\ClashMimo.Presentation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\fonts\**" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
+    <AvaloniaResource Include="Assets\win\**" />
+  </ItemGroup>
+  <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('linux'))">
+    <AvaloniaResource Include="Assets\linux\**" />
+  </ItemGroup>
+  <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('osx'))">
+    <AvaloniaResource Include="Assets\macos\**" />
+  </ItemGroup>
+</Project>

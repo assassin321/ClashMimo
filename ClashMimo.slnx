@@ -1,0 +1,20 @@
+<Solution>
+  <Project Path="src/ClashMimo.Application/ClashMimo.Application.csproj" />
+  <Project Path="src/ClashMimo.Domain/ClashMimo.Domain.csproj" />
+  <Project Path="src/ClashMimo.Infrastructure/ClashMimo.Infrastructure.csproj" />
+  <Project Path="src/ClashMimo.Native/ClashMimo.Native.csproj" />
+  <Project Path="src/ClashMimo.Presentation/ClashMimo.Presentation.csproj" />
+  <Project Path="src/ClashMimo.Desktop/ClashMimo.Desktop.csproj" />
+  <Project Path="tests/ClashMimo.ProxySelection.Tests/ClashMimo.ProxySelection.Tests.csproj" />
+  <Project Path="tests/ClashMimo.ProxyPage.Tests/ClashMimo.ProxyPage.Tests.csproj" />
+  <Project Path="tests/ClashMimo.Home.Tests/ClashMimo.Home.Tests.csproj" />
+  <Project Path="tests/ClashMimo.Shell.Tests/ClashMimo.Shell.Tests.csproj" />
+  <Project Path="tests/ClashMimo.RuntimeConfig.Tests/ClashMimo.RuntimeConfig.Tests.csproj" />
+  <Project Path="tests/ClashMimo.ChainProxy.Tests/ClashMimo.ChainProxy.Tests.csproj" />
+  <Project Path="tests/ClashMimo.Monitoring.Tests/ClashMimo.Monitoring.Tests.csproj" />
+  <Project Path="tests/ClashMimo.Subscription.Tests/ClashMimo.Subscription.Tests.csproj" />
+  <Project Path="tests/ClashMimo.Override.Tests/ClashMimo.Override.Tests.csproj" />
+  <Project Path="tests/ClashMimo.Settings.Tests/ClashMimo.Settings.Tests.csproj" />
+  <Project Path="tests/ClashMimo.Infrastructure.Tests/ClashMimo.Infrastructure.Tests.csproj" />
+  <Project Path="tests/ClashMimo.WebDav.Tests/ClashMimo.WebDav.Tests.csproj" />
+</Solution>
