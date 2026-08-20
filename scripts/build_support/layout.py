@@ -115,10 +115,10 @@ def should_move_dependency_file(path: Path, configuration: str) -> bool:
         return True
 
     if path.name in HUB_LIBRARY_NAMES:
-        return True
+        return False
 
     if configuration != "release" and path.name in HUB_SYMBOL_NAMES:
-        return True
+        return False
 
     return False
 
