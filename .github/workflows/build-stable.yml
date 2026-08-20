@@ -12,6 +12,8 @@ on:
       - stable
     paths:
       - Directory.Build.props
+    tags:
+      - 'v*'
 
 concurrency:
   group: stable-release
