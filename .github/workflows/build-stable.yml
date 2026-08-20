@@ -31,12 +31,22 @@ env:
 
 jobs:
   validate-branch:
-    name: Validate stable branch
+    name: Validate branch or tag
     runs-on: ubuntu-22.04
     steps:
-      - name: Require stable branch
+      - name: Require stable branch or version tag
         shell: bash
-        run: test "${{ github.ref }}" = 'refs/heads/stable'
+        run: |
+          if [[ "${{ github.ref }}" == 'refs/heads/stable' ]]; then
+            echo "Triggered by stable branch push."
+            exit 0
+          elif [[ "${{ github.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Triggered by version tag: ${{ github.ref }}"
+            exit 0
+          else
+            echo "Triggered by ${{ github.ref }}, expected refs/heads/stable or a version tag like v1.2.3"
+            exit 1
+          fi
 
   detect-version-change:
     name: Detect version change
@@ -56,10 +66,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          
+          # Manual trigger always builds
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo 'should_build=true' >> "$GITHUB_OUTPUT"
             echo 'Manual trigger: build enabled.'
-          elif git diff --unified=0 "${{ github.event.before }}" "${{ github.sha }}" -- Directory.Build.props | grep -Eq '^[+-].*<AppVersion>'; then
+            exit 0
+          fi
+          
+          # Tag push always builds
+          if [[ "${{ github.ref }}" =~ ^refs/tags/v ]]; then
+            echo 'should_build=true' >> "$GITHUB_OUTPUT"
+            echo 'Tag push: build enabled.'
+            exit 0
+          fi
+          
+          # Branch push: check if AppVersion changed
+          if git diff --unified=0 "${{ github.event.before }}" "${{ github.sha }}" -- Directory.Build.props 2>/dev/null | grep -Eq '^[+-].*<AppVersion>'; then
             echo 'should_build=true' >> "$GITHUB_OUTPUT"
             echo 'AppVersion changed: build enabled.'
           else
@@ -125,10 +148,10 @@ jobs:
           {
             echo "### Release Metadata"
             echo ""
-            echo "- App: `${{ steps.names.outputs.app_display_name }}`"
-            echo "- Channel: `stable`"
-            echo "- Version: `${{ steps.ver.outputs.version }}`"
-            echo "- Tag: `${{ steps.ver.outputs.tag }}`"
+            echo "- App: \`${{ steps.names.outputs.app_display_name }}\`"
+            echo "- Channel: \`stable\`"
+            echo "- Version: \`${{ steps.ver.outputs.version }}\`"
+            echo "- Tag: \`${{ steps.ver.outputs.tag }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Read changelog
@@ -333,7 +356,7 @@ jobs:
     name: Publish to download repository
     needs: [prepare, build]
     runs-on: ubuntu-22.04
-    if: ${{ needs.build.result == 'success' }}
+    if: ${{ needs.build.result == 'success' || needs.build.result == 'skipped' }}
 
     steps:
       - name: Check out repository
@@ -354,7 +377,7 @@ jobs:
           printf '%s' '${{ needs.prepare.outputs.release_notes }}' | base64 --decode > release_notes.md
           cat release_notes.md
 
-      - name: Publish to ClashMimo
+      - name: Publish to clashmimo
         uses: softprops/action-gh-release@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -377,13 +400,22 @@ jobs:
           overwrite_files: true
           make_latest: true
 
-      - name: Find promoted beta source
+      - name: Find promoted beta source (skip for tag pushes)
         id: promotion
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          
+          # Skip beta source detection for tag pushes
+          if [[ "${{ github.ref }}" =~ ^refs/tags/v ]]; then
+            echo "Tag push detected, skipping beta source detection."
+            echo "pull_number=0" >> "$GITHUB_OUTPUT"
+            echo "source_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          
           gh api --paginate --slurp \
             "repos/${GITHUB_REPOSITORY}/pulls?state=closed&base=stable&sort=updated&direction=desc&per_page=100" \
             > stable-pulls.json
@@ -416,8 +448,8 @@ jobs:
             ' stable-pulls.json
           )
           if [ -z "${source_sha}" ]; then
-            echo '::error::No merged beta to stable pull request is included in this release.'
-            exit 1
+            echo '::warning::No merged beta to stable pull request found. Using current SHA as baseline.'
+            source_sha="${GITHUB_SHA}"
           fi
           printf 'pull_number=%s\nsource_sha=%s\n' "${pull_number}" "${source_sha}" | tee -a "$GITHUB_OUTPUT"
 
@@ -428,6 +460,13 @@ jobs:
           SOURCE_SHA: ${{ steps.promotion.outputs.source_sha }}
         run: |
           set -euo pipefail
+          
+          # Skip baseline creation for tag pushes
+          if [[ "${{ github.ref }}" =~ ^refs/tags/v ]] && [ "${{ steps.promotion.outputs.pull_number }}" = "0" ]; then
+            echo "Tag push detected, skipping beta baseline creation."
+            exit 0
+          fi
+          
           baseline_tag="beta-base/${{ needs.prepare.outputs.tag }}"
           existing_sha="$(
             git ls-remote --tags origin "refs/tags/${baseline_tag}" "refs/tags/${baseline_tag}^{}" |
