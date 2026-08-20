@@ -1,6 +1,6 @@
 use std::sync::OnceLock;
 
-const DEFAULT_APP_NAME: &str = "clashmimo";
+const DEFAULT_APP_NAME: &str = "ClashMimo";
 
 pub fn service_name() -> &'static str {
     static VALUE: OnceLock<String> = OnceLock::new();

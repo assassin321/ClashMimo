@@ -9,10 +9,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <AppName>clashmimo</AppName>
+    <AppName>ClashMimo</AppName>
     <AppDisplayName>ClashMimo</AppDisplayName>
     <AppVersion>2.0.25</AppVersion>
-    <AppPipePrefix>clashmimo</AppPipePrefix>
+    <AppPipePrefix>ClashMimo</AppPipePrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">

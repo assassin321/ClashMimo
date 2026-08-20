@@ -23,25 +23,25 @@
   <Window.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="avares://clashmimo/Styles/Theme.axaml" />
+        <ResourceInclude Source="avares://ClashMimo/Styles/Theme.axaml" />
       </ResourceDictionary.MergedDictionaries>
       <views:PageToViewConverter x:Key="PageToView" />
     </ResourceDictionary>
   </Window.Resources>
 
   <Window.Styles>
-    <StyleInclude Source="avares://clashmimo/Styles/ShellStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/PrimitivesStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/ScrollStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/ListPageStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/HomeStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/ProxyStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/ComboBoxStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/MenuStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/SwitchStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/DialogStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/ToastStyles.axaml" />
-    <StyleInclude Source="avares://clashmimo/Styles/SettingsStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/ShellStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/PrimitivesStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/ScrollStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/ListPageStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/HomeStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/ProxyStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/ComboBoxStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/MenuStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/SwitchStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/DialogStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/ToastStyles.axaml" />
+    <StyleInclude Source="avares://ClashMimo/Styles/SettingsStyles.axaml" />
   </Window.Styles>
 
   <Grid RowDefinitions="36,*">

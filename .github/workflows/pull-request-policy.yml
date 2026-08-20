@@ -27,11 +27,11 @@ jobs:
             exit 0
           fi
           if [ "${BASE_BRANCH}" = "stable" ] \
-            && [ "${ACTOR}" = "assassin321" ] \
+            && [ "${ACTOR}" = "Kindness-Kismet" ] \
             && [ "${HEAD_BRANCH}" = "beta" ] \
             && [ "${HEAD_REPOSITORY}" = "${REPOSITORY}" ]; then
             echo 'Owner promotion from beta to stable.'
             exit 0
           fi
-          echo '::error::Pull requests must target beta. Only assassin321 may promote beta directly to stable.'
+          echo '::error::Pull requests must target beta. Only Kindness-Kismet may promote beta directly to stable.'
           exit 1
