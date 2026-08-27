@@ -1,0 +1,3 @@
+namespace ClashMimo.Application.Runtime;
+
+public sealed record CoreSnapshot(CoreState State, int? Pid, string ExternalController, string? LastError);
