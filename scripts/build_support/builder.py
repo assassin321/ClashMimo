@@ -137,7 +137,7 @@ def publish_dotnet(metadata: AppMetadata, configuration: str, target: PlatformTa
         "--runtime",
         target.dotnet_runtime,
         "--self-contained",
-        "false",
+        "true",
         "--output",
         str(output_dir),
         "--nologo",
