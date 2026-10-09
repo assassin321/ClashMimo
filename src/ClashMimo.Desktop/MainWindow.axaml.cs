@@ -27,6 +27,8 @@ namespace ClashMimo.Desktop;
 
 public sealed partial class MainWindow : Window
 {
+    // 隐藏后统一等待该时长：轻量模式结束 UI 进程，常规模式回收页面视觉树。
+    private static readonly TimeSpan HiddenReleaseDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan PageLoadingMinVisible = TimeSpan.FromMilliseconds(300);
     private readonly WindowAppearanceService _windowAppearanceService = new();
     private readonly WindowStateService _windowStateService;
@@ -60,6 +62,7 @@ public sealed partial class MainWindow : Window
     public MainWindow(IAppSettingsStore? settingsStore, AppSettings? settings)
     {
         _windowStateService = new WindowStateService(settingsStore, settings);
+        _hiddenReleaseTimer = new DispatcherTimer { Interval = HiddenReleaseDelay };
         _hiddenReleaseTimer.Tick += OnHiddenReleaseTimerTick;
         InitializeComponent();
         ApplyPlatformWindowDecorations();
