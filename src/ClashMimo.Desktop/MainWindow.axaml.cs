@@ -60,7 +60,6 @@ public sealed partial class MainWindow : Window
     public MainWindow(IAppSettingsStore? settingsStore, AppSettings? settings)
     {
         _windowStateService = new WindowStateService(settingsStore, settings);
-        _hiddenReleaseTimer = new DispatcherTimer { Interval = HiddenReleaseDelay };
         _hiddenReleaseTimer.Tick += OnHiddenReleaseTimerTick;
         InitializeComponent();
         ApplyPlatformWindowDecorations();
