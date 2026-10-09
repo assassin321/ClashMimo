@@ -1,0 +1,37 @@
+using ClashMimo.Domain.Subscriptions;
+using ClashMimo.Application.Diagnostics;
+
+namespace ClashMimo.Application.Subscriptions;
+
+public sealed class LocalSubscriptionImporter(ISubscriptionStore store)
+{
+    private readonly SubscriptionConfigValidator _validator = new();
+    private readonly SubscriptionContentNormalizer _contentNormalizer = new();
+    private readonly SubscriptionChainProxyAnalyzer _chainProxyAnalyzer = new();
+
+    public Subscription Import(
+        string name,
+        string content,
+        string sourceLocation = "local",
+        int autoTestDelayIntervalMinutes = 0)
+    {
+        var sourceFormat = _contentNormalizer.DetectSourceFormat(content);
+        var normalizedContent = _contentNormalizer.Normalize(content);
+        _validator.Validate(normalizedContent);
+
+        var subscription = new Subscription(
+            Id: Guid.NewGuid().ToString("N"),
+            Name: name,
+            SourceLocation: sourceLocation,
+            IsLocalFile: true,
+            CreatedAt: DateTimeOffset.UtcNow,
+            LastUpdatedAt: DateTimeOffset.UtcNow,
+            AutoTestDelayIntervalMinutes: autoTestDelayIntervalMinutes,
+            BuiltinChainProxyNames: _chainProxyAnalyzer.AnalyzeBuiltinChainProxyNames(normalizedContent),
+            SourceFormat: sourceFormat);
+
+        store.Save(subscription, normalizedContent);
+        AppLogger.Info($"Local subscription imported: {name}");
+        return subscription;
+    }
+}
