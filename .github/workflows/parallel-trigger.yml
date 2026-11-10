@@ -1,0 +1,198 @@
+name: Parallel Trigger
+
+on:
+  push:
+    branches:
+      - beta
+    paths: &verification-paths
+      - 'src/**'
+      - 'native/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - '.github/scripts/**'
+      - '.github/workflows/stability-verification.yml'
+      - 'Directory.Build.props'
+      - 'ClashMimo.slnx'
+      - '**/Cargo.toml'
+      - 'Cargo.lock'
+      - 'global.json'
+      - '**/*.csproj'
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+    branches:
+      - beta
+    paths: *verification-paths
+  workflow_dispatch:
+
+concurrency:
+  group: verification-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  validate-branch:
+    name: Validate trigger branch
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Require beta branch
+        shell: bash
+        run: test "${{ github.ref }}" = 'refs/heads/beta'
+
+  detect-beta-build-changes:
+    name: Detect beta build changes
+    if: github.event_name == 'push' && github.ref == 'refs/heads/beta'
+    runs-on: ubuntu-22.04
+    outputs:
+      should_build: ${{ steps.changes.outputs.should_build }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect product changes
+        id: changes
+        shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if git log --format= --patch "${BEFORE_SHA}..${AFTER_SHA}" -- Directory.Build.props | grep -Eq '^[+-].*<AppVersion>'; then
+            echo 'should_build=false' >> "$GITHUB_OUTPUT"
+            echo 'Stable version metadata changed in this push; beta build is skipped.'
+            exit 0
+          fi
+
+          if git log --format= --name-only "${BEFORE_SHA}..${AFTER_SHA}" -- .github/CHANGELOG.md | grep -q .; then
+            echo 'should_build=false' >> "$GITHUB_OUTPUT"
+            echo 'Changelog changed in this push; beta build is skipped.'
+            exit 0
+          fi
+
+          props_version="$(sed -n 's:.*<AppVersion>\(.*\)</AppVersion>.*:\1:p' Directory.Build.props)"
+          tags="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" --jq '.[] | select(.draft | not) | .tag_name')"
+          stable="${props_version}"
+          while IFS= read -r tag; do
+            if [[ "${tag}" =~ ^v?([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              candidate="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+              if [ "$(printf '%s\n%s\n' "${stable}" "${candidate}" | sort -V | tail -n 1)" = "${candidate}" ]; then
+                stable="${candidate}"
+              fi
+            fi
+          done <<< "${tags}"
+
+          IFS=. read -r major minor patch <<< "${stable}"
+          target="${major}.${minor}.$((patch + 1))"
+          beta=0
+          while IFS= read -r tag; do
+            if [[ "${tag}" =~ ^v?${target//./\.}-beta([0-9]+)$ ]] && [ "${BASH_REMATCH[1]}" -gt "${beta}" ]; then
+              beta="${BASH_REMATCH[1]}"
+            fi
+          done <<< "${tags}"
+
+          if [ "${beta}" -gt 0 ]; then
+            previous_tag="v${target}-beta${beta}"
+          else
+            stable_tag="v${stable}"
+            baseline_tag="beta-base/${stable_tag}"
+            if git ls-remote --exit-code --tags origin "refs/tags/${baseline_tag}" >/dev/null 2>&1; then
+              previous_tag="${baseline_tag}"
+            else
+              previous_tag="${stable_tag}"
+            fi
+          fi
+
+          # 基线 tag 尚未建立时优雅跳过，避免 fetch 失败拖垮整条验证流
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${previous_tag}" >/dev/null 2>&1; then
+            echo 'should_build=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Base tag ${previous_tag} does not exist yet; beta build is skipped."
+            exit 0
+          fi
+
+          git fetch --force origin "refs/tags/${previous_tag}:refs/tags/${previous_tag}"
+          git diff --name-only "${previous_tag}" "${AFTER_SHA}" > changed-paths.txt
+          should_build=false
+          while IFS= read -r path; do
+            case "${path}" in
+              Directory.Build.props)
+                ;;
+              *.cs|*.rs|*.axaml|*.csproj|Cargo.toml|*/Cargo.toml|Cargo.lock|Directory.Packages.props|ClashMimo.slnx|global.json)
+                should_build=true
+                break
+                ;;
+            esac
+          done < changed-paths.txt
+          echo "should_build=${should_build}" >> "$GITHUB_OUTPUT"
+
+          if [ "${should_build}" = true ]; then
+            echo "Product changes since ${previous_tag} require a beta build."
+          else
+            echo "No product changes since ${previous_tag}; beta build is skipped."
+          fi
+
+  code-quality:
+    name: Trigger code quality
+    if: >-
+      ${{
+        (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/beta') &&
+        (github.event.action != 'edited' || github.event.changes.base.ref.from != null)
+      }}
+    uses: ./.github/workflows/code-quality.yml
+    secrets: inherit
+
+  stability-verification:
+    name: Trigger test verification
+    if: >-
+      ${{
+        (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/beta') &&
+        (github.event.action != 'edited' || github.event.changes.base.ref.from != null)
+      }}
+    uses: ./.github/workflows/stability-verification.yml
+    secrets: inherit
+
+  beta-build:
+    name: Trigger beta build
+    needs: [detect-beta-build-changes, code-quality, stability-verification]
+    if: >-
+      ${{
+        always() &&
+        needs.detect-beta-build-changes.result == 'success' &&
+        needs.detect-beta-build-changes.outputs.should_build == 'true' &&
+        needs.code-quality.result == 'success' &&
+        needs.stability-verification.result == 'success' &&
+        github.ref == 'refs/heads/beta' &&
+        github.event_name == 'push'
+      }}
+    uses: ./.github/workflows/build-beta.yml
+    secrets: inherit
+
+  beta-build-not-required:
+    name: Beta build not required
+    needs: [detect-beta-build-changes, code-quality, stability-verification]
+    if: >-
+      ${{
+        always() &&
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/beta' &&
+        needs.detect-beta-build-changes.result == 'success' &&
+        needs.detect-beta-build-changes.outputs.should_build != 'true' &&
+        needs.code-quality.result == 'success' &&
+        needs.stability-verification.result == 'success'
+      }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Report intentional skip
+        shell: bash
+        run: |
+          echo '::notice::Verification passed; no product changes require a beta build.'
+          echo '### Beta Build' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Verification passed. The beta build was intentionally skipped because no product files changed.' >> "$GITHUB_STEP_SUMMARY"

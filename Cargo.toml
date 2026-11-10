@@ -1,0 +1,30 @@
+[workspace]
+members = [
+    "native/hub",
+    "native/service",
+    "native/xtask",
+]
+resolver = "3"
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+# MSVC 链接带导出的 DLL 时必然打印导入库生成消息，无告警价值
+linker_messages = "allow"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+indexing_slicing = "deny"
+
+[profile.dev]
+panic = "unwind"
+
+[profile.release]
+panic = "unwind"
+strip = "symbols"
+lto = true
+codegen-units = 1
+opt-level = "z"
