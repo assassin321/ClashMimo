@@ -100,7 +100,7 @@
     <Button Grid.Column="0"
             Classes="about-link"
             AutomationProperties.AutomationId="Settings.About.GitHubLink"
-            Tag="https://github.com/Kindness-Kismet/clashmimo"
+            Tag="https://github.com/assassin321/ClashMimo"
             Click="OnOpenExternalLinkClicked">
       <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
         <Border Classes="about-link-icon-badge">
@@ -116,7 +116,7 @@
     <Button Grid.Column="1"
             Classes="about-link"
             AutomationProperties.AutomationId="Settings.About.IssuesLink"
-            Tag="https://github.com/Kindness-Kismet/clashmimo/issues"
+            Tag="https://github.com/assassin321/ClashMimo/issues"
             Click="OnOpenExternalLinkClicked">
       <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
         <Border Classes="about-link-icon-badge">

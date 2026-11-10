@@ -64,7 +64,7 @@ jobs:
           set -euo pipefail
           props_version="$(sed -n 's:.*<AppVersion>\(.*\)</AppVersion>.*:\1:p' Directory.Build.props)"
           test -n "${props_version}"
-          tags="$(gh api --paginate 'repos/Kindness-Kismet/clashmimo/releases?per_page=100' --jq '.[] | select(.draft | not) | .tag_name')"
+          tags="$(gh api --paginate 'repos/assassin321/ClashMimo/releases?per_page=100' --jq '.[] | select(.draft | not) | .tag_name')"
           stable="${props_version}"
           while IFS= read -r tag; do
             if [[ "${tag}" =~ ^v?([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
@@ -381,7 +381,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: Kindness-Kismet/clashmimo
+          repository: assassin321/ClashMimo
           tag_name: ${{ needs.prepare.outputs.tag }}
           target_commitish: ${{ github.sha }}
           name: ${{ needs.prepare.outputs.app_display_name }} ${{ needs.prepare.outputs.version }}
@@ -411,7 +411,7 @@ jobs:
 
           gh api \
             --method PATCH \
-            "repos/Kindness-Kismet/clashmimo/releases/${RELEASE_ID}" \
+            "repos/assassin321/ClashMimo/releases/${RELEASE_ID}" \
             -F draft=false \
             -F prerelease=true
 
@@ -425,7 +425,7 @@ jobs:
           set -euo pipefail
 
           release_id="$(
-            gh api --paginate --slurp 'repos/Kindness-Kismet/clashmimo/releases?per_page=100' |
+            gh api --paginate --slurp 'repos/assassin321/ClashMimo/releases?per_page=100' |
               jq -r --arg tag "${TAG}" '[.[][] | select(.draft and .tag_name == $tag) | .id] | first // empty'
           )"
           if [ -z "${release_id}" ]; then
@@ -433,5 +433,5 @@ jobs:
             exit 0
           fi
 
-          gh api --method DELETE "repos/Kindness-Kismet/clashmimo/releases/${release_id}"
+          gh api --method DELETE "repos/assassin321/ClashMimo/releases/${release_id}"
           echo "::notice::Discarded unpublished beta release ${TAG}."

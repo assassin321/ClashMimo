@@ -10,8 +10,8 @@ namespace ClashMimo.Infrastructure.Updates;
 
 public sealed class GitHubAppUpdateChecker : IAppUpdateChecker
 {
-    private static readonly Uri ReleasesApiUri = new("https://api.github.com/repos/Kindness-Kismet/clashmimo/releases?per_page=30");
-    private const string LatestReleasePageUrl = "https://github.com/Kindness-Kismet/clashmimo/releases/latest";
+    private static readonly Uri ReleasesApiUri = new("https://api.github.com/repos/assassin321/ClashMimo/releases?per_page=30");
+    private const string LatestReleasePageUrl = "https://github.com/assassin321/ClashMimo/releases/latest";
     private static readonly TimeSpan AttemptTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan TotalTimeout = TimeSpan.FromSeconds(15);
 
